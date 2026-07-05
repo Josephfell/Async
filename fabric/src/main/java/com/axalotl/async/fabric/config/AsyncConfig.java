@@ -28,7 +28,8 @@ public class AsyncConfig {
             "maxThreads",
             "synchronizedEntities",
             "enableAsyncSpawn",
-            "enableAsyncRandomTicks"
+            "enableAsyncRandomTicks",
+            "synchronizeEntityEvents"
     );
 
     public static void init() {
@@ -67,6 +68,8 @@ public class AsyncConfig {
                 "Enables async entity spawning. WARNING: incompatible with Carpet's lagFreeSpawning.");
         setWithComment("enableAsyncRandomTicks", enableAsyncRandomTicks,
                 "Experimental! Enables async random ticks.");
+        setWithComment("synchronizeEntityEvents", synchronizeEntityEvents,
+                "Synchronizes entity tick event bus dispatch. Enable for modpacks with mods that use non-thread-safe event handlers (e.g. Reliquary, Create). Reduces parallelism but prevents ConcurrentModificationException crashes.");
 
         CONFIG.save();
         LOGGER.info("Configuration saved.");
@@ -84,6 +87,7 @@ public class AsyncConfig {
         maxThreads = CONFIG.getOrElse("maxThreads", maxThreads);
         enableAsyncSpawn = CONFIG.getOrElse("enableAsyncSpawn", enableAsyncSpawn);
         enableAsyncRandomTicks = CONFIG.getOrElse("enableAsyncRandomTicks", enableAsyncRandomTicks);
+        synchronizeEntityEvents = CONFIG.getOrElse("synchronizeEntityEvents", synchronizeEntityEvents);
 
         List<String> entries = CONFIG.get("synchronizedEntities");
         if (entries != null) {
@@ -102,6 +106,7 @@ public class AsyncConfig {
                   - 'minecraft:*'      = all entities in namespace""");
         setCommentIfExists("enableAsyncSpawn", "Enables async entity spawning. WARNING: incompatible with Carpet's lagFreeSpawning.");
         setCommentIfExists("enableAsyncRandomTicks", "Experimental! Enables async random ticks.");
+        setCommentIfExists("synchronizeEntityEvents", "Synchronizes entity tick event bus dispatch. Enable for modpacks with mods that use non-thread-safe event handlers (e.g. Reliquary, Create). Reduces parallelism but prevents ConcurrentModificationException crashes.");
     }
 
     private static void setCommentIfExists(String key, String comment) {
@@ -131,6 +136,7 @@ public class AsyncConfig {
         maxThreads = -1;
         enableAsyncSpawn = false;
         enableAsyncRandomTicks = false;
+        synchronizeEntityEvents = false;
         synchronizedEntities = getDefaultSynchronizedEntities();
     }
 }

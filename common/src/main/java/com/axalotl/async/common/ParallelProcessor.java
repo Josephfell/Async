@@ -21,6 +21,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static com.axalotl.async.common.utils.TickStats.*;
 
@@ -47,6 +48,9 @@ public class ParallelProcessor {
 
     //Cache
     private static final Map<Class<?>, Boolean> ASYNC_API_CACHE = new ConcurrentHashMap<>();
+
+    //Event bus lock for mods with non-thread-safe event handlers
+    private static final ReentrantLock EVENT_BUS_LOCK = new ReentrantLock();
 
     //Threads
     private static final Map<String, Set<WeakReference<Thread>>> MC_THREAD_TRACKER = new ConcurrentHashMap<>();
@@ -196,7 +200,16 @@ public class ParallelProcessor {
     private static void tickEntity(ServerLevel world, Entity entity, boolean async) {
         long start = System.nanoTime();
         try {
-            world.tickNonPassenger(entity);
+            if (async && AsyncConfig.synchronizeEntityEvents) {
+                EVENT_BUS_LOCK.lock();
+                try {
+                    world.tickNonPassenger(entity);
+                } finally {
+                    EVENT_BUS_LOCK.unlock();
+                }
+            } else {
+                world.tickNonPassenger(entity);
+            }
         } catch (Exception e) {
             LOGGER.error("Error during {} tick. Entity: {}, UUID: {}",
                     async ? "async" : "sync", entity.getType(), entity.getUUID(), e);

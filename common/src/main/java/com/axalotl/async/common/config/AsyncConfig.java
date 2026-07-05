@@ -16,6 +16,7 @@ public class AsyncConfig {
     public static int maxThreads = -1;
     public static boolean enableAsyncSpawn = false;
     public static boolean enableAsyncRandomTicks = false;
+    public static boolean synchronizeEntityEvents = false;
     public static Set<String> synchronizedEntities = getDefaultSynchronizedEntities();
 
     // Caches
